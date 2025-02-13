@@ -17,15 +17,15 @@ class Odds:
          "trifecta": 0.725,  # 三連単
       }
 
-   def _calculate_basic_odds(self, votes: List[int], bet_type: str) -> List[float]:
+   def _calculate_basic_odds(self, votes: Dict[str, int], bet_type: str) -> List[float]:
       """
       基本的なオッズ計算のための共通メソッド
       """
-      total_votes = sum(votes)
+      total_votes = sum(list(votes["horse_number"].values()))
       payout_rate = self.payout_rates[bet_type]
 
       odds_list = []
-      for vote in votes:
+      for vote in list(votes["horse_number"].values()):
          if vote == 0:
             odds_list.append(0)
          else:
@@ -55,15 +55,16 @@ class Odds:
    def calculate_Trifecta_Odds(self, votes: List[int]) -> List[float]:
       return self._calculate_basic_odds(votes, "trifecta")
 
-   def calculate_Place_Odds(self, votes: List[int]) -> List[List[float]]:
+   def calculate_Place_Odds(self, votes: Dict[str, int]) -> List[List[float]]:
       """
       複勝オッズの計算（特殊なロジックのため個別に実装）
       """
-      total_votes = sum(votes)
-      num_horses = len(votes)
+      votes_num = list(votes["horse_number"].values())
+      total_votes = sum(list(votes["horse_number"].values()))
+      num_horses = votes["horse_starters"]
       winning_places = 3 if num_horses >= 8 else 2
 
-      indexed_list = list(enumerate(votes))
+      indexed_list = list(enumerate(votes_num))
       index_combinations = list(itertools.combinations(indexed_list, winning_places))
 
       odds_by_horse = [[] for _ in range(num_horses)]
@@ -73,14 +74,13 @@ class Odds:
                odds_by_horse[horse_idx].append(combo)
 
       result_odds = []
-      for horse_idx, horse_votes in enumerate(votes):
+      for horse_idx, horse_votes in enumerate(votes_num):
          if horse_votes == 0:
             result_odds.append([0, 0])
             continue
-
          place_odds = []
          for combo in odds_by_horse[horse_idx]:
-            combo_votes = sum(votes[idx] for idx, _ in combo)
+            combo_votes = sum(votes_num[idx] for idx, _ in combo)
             remaining_votes = (total_votes - combo_votes) / winning_places
             odds = (
                (horse_votes + remaining_votes)
@@ -100,9 +100,9 @@ class Odds:
    def calculate_Quinella_Place_Odds(
       self, votes: Dict[str, int]
    ) -> Dict[Tuple[int, int], List[float]]:
-      total_votes = sum(list(votes.values()))
+      total_votes = sum(list(votes["horse_number"].values()))
       payout_rate = self.payout_rates.get("quinella_place", 0.0)
-      num_horses = 7
+      num_horses = votes["horse_starters"]
 
       # 全ワイド組み合わせを列挙 (i < j)
       pair_list = list(itertools.combinations(range(1, num_horses + 1), 2))
@@ -115,7 +115,7 @@ class Odds:
       for combo in all_three_combos:
          for i in pair_list:
             if all(item in combo for item in i):
-               vote_num = votes[f"{i[0]}-{i[1]}"]
+               vote_num = votes["horse_number"][f"{i[0]}-{i[1]}"]
                combos_by_pair[combo].append(vote_num)
 
       # リストの合計を取得
@@ -127,7 +127,7 @@ class Odds:
          for k in pair_list:
             if all(item in i for item in k):
                remaining_votes = (total_votes - j) / 3.0
-               vote_num = votes[f"{k[0]}-{k[1]}"]
+               vote_num = votes["horse_number"][f"{k[0]}-{k[1]}"]
                raw_odds = (vote_num + remaining_votes) * payout_rate / vote_num
                floored = math.floor(raw_odds * 10) / 10
                pair_votes[k].append(floored)
