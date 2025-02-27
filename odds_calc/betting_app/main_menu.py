@@ -32,11 +32,6 @@ class MainMenuWidget(QWidget):
       layout.setContentsMargins(50, 50, 50, 50)
       layout.setSpacing(20)
 
-      title_label = QLabel("Welcome to Horse Racing Betting")
-      title_label.setAlignment(Qt.AlignCenter)
-      title_label.setStyleSheet("font-size: 24pt; font-weight: bold; color: #4a2a0a;")
-      layout.addWidget(title_label)
-
       subtitle_label = QLabel("さあ、熱いレースに参加しましょう！")
       subtitle_label.setAlignment(Qt.AlignCenter)
       subtitle_label.setStyleSheet("font-size: 16pt; color: #4a2a0a;")
