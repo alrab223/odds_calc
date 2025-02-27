@@ -1,6 +1,5 @@
 import json
 import itertools
-from odds_calc.betting_app.utils import assign_frames
 
 
 def create_vote_data_with_bracket(horse_starters: int) -> dict:
@@ -16,7 +15,6 @@ def create_vote_data_with_bracket(horse_starters: int) -> dict:
    data["quinella"] = {combo: 0 for combo in combos2}
    data["quinella_place"] = {combo: 0 for combo in combos2}
    if horse_starters >= 8:
-      groups = assign_frames(horse_starters)
       frames = list(range(1, 9))
       bracket_combos = [
          "{}-{}".format(i, j) for i, j in itertools.combinations(frames, 2)

@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import (
    QLabel,
    QMessageBox,
 )
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QCursor, QColor, QBrush
 import json
 from odds_calc.betting_app.widgets import HorseNumberSelector
@@ -40,9 +40,6 @@ class VoteInputWidget(QWidget):
       self.table_widgets = {}
       self.filter_controls = {}
       self.full_data = {}
-      self.odds_timer = QTimer()
-      self.odds_timer.timeout.connect(self.update_all_odds)
-      self.odds_timer.start(15000)
       for key in self.data:
          if key == "horse_starters":
             continue
@@ -282,7 +279,7 @@ class VoteInputWidget(QWidget):
       key = key_item.text()
       try:
          value = int(item.text())
-      except:
+      except ValueError:
          value = 0
       self.data[bet_type][key] = value
       table.blockSignals(True)
@@ -296,6 +293,8 @@ class VoteInputWidget(QWidget):
       else:
          odds_item.setText(new_odds)
       table.blockSignals(False)
+      # 票数変更時に即時全体のオッズを更新する
+      self.update_all_odds()
 
    def apply_filter(self, bet_type):
       full = self.full_data.get(bet_type, [])
